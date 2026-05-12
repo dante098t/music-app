@@ -1,0 +1,19 @@
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+*.xcworkspace
+*.xcuserdata
+
+# Swift Package Manager
+.build/
+
+# macOS
+.DS_Store
+
+# Secrets
+.env
+*.plist
+
+# CocoaPods (nếu dùng)
+Pods/
