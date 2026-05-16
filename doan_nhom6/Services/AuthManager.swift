@@ -49,6 +49,7 @@ final class AuthManager: ObservableObject {
 
        }
     
+    
     func checkAuthStatus() {
         Task {
             do {

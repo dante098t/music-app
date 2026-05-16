@@ -5,16 +5,30 @@ struct SongCard: View {
     let song: Song
 
     var body: some View {
+
         HStack(spacing: 12) {
 
-            AsyncImage(url: URL(string: song.image_url ?? "")) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
-            } placeholder: {
-                Color.gray.opacity(0.3)
+            let url = song.image_url.flatMap { URL(string: $0) }
+
+            AsyncImage(url: url) { phase in
+
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+
+                default:
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color.white.opacity(0.08))
+
+                        Image(systemName: "music.note")
+                            .foregroundColor(.gray)
+                    }
+                }
             }
-            .frame(width: 52, height: 52) // 👈 nhỏ lại cho mini
+            .frame(width: 52, height: 52)
             .clipShape(RoundedRectangle(cornerRadius: 14))
 
             VStack(alignment: .leading, spacing: 3) {
@@ -23,15 +37,13 @@ struct SongCard: View {
                     .foregroundColor(.white)
                     .font(.system(size: 15, weight: .medium))
                     .lineLimit(1)
-                    .truncationMode(.tail)
 
                 Text(song.artist?.name ?? "Unknown Artist")
                     .foregroundColor(.gray)
                     .font(.system(size: 13))
                     .lineLimit(1)
-                    .truncationMode(.tail)
             }
-            .frame(maxWidth: .infinity, alignment: .leading) // 👈 quan trọng
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             Image(systemName: "play.fill")
                 .foregroundColor(.white.opacity(0.9))

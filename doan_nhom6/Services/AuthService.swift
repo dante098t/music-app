@@ -1,6 +1,17 @@
 import Foundation
 import Supabase
 
+// MARK: - PROFILE INSERT MODEL
+struct ProfileInsert: Encodable {
+    let id: String
+    let username: String
+    let role: String
+    let premium: Bool
+    let is_banned: Bool
+    let avatar_url: String?
+}
+
+// MARK: - AUTH SERVICE
 final class AuthService {
 
     static let shared = AuthService()
@@ -11,8 +22,7 @@ final class AuthService {
         SupabaseService.shared.client
     }
 
-    // MARK: - Register
-
+    // MARK: - REGISTER
     func register(
         email: String,
         password: String,
@@ -20,63 +30,86 @@ final class AuthService {
         role: String
     ) async throws {
 
-        let response = try await client.auth.signUp(
-            email: email,
-            password: password
-        )
+        do {
 
-        let user = response.user
+            // 1. SIGN UP
+            let response = try await client.auth.signUp(
+                email: email,
+                password: password
+            )
 
-        try await client
-            .from("profiles")
-            .insert([
-                "id": user.id.uuidString,
-                "email": email,
-                "username": username,
-                "role": role
-            ])
-            .execute()
+            let userId = response.user.id
+
+            print("✅ AUTH CREATED:", userId)
+
+            // 2. CREATE PROFILE MODEL
+            let data = ProfileInsert(
+                id: userId.uuidString,
+                username: username,
+                role: role,
+                premium: false,
+                is_banned: false,
+                avatar_url: nil
+            )
+
+            // 3. INSERT PROFILE
+            try await client
+                .from("profiles")
+                .insert(data)
+                .execute()
+
+            print("✅ PROFILE CREATED SUCCESS")
+
+        } catch {
+            print("❌ REGISTER ERROR:", error)
+            throw error
+        }
     }
 
-    // MARK: - Login
-
+    // MARK: - LOGIN (FIXED)
     func login(
         email: String,
         password: String
     ) async throws {
-
         try await client.auth.signIn(
             email: email,
             password: password
         )
+        print("✅ LOGIN SUCCESS")
     }
 
-    // MARK: - Logout
-
+    // MARK: - LOGOUT
     func logout() async throws {
 
         try await client.auth.signOut()
+
+        print("✅ LOGOUT SUCCESS")
     }
 
-    // MARK: - Current User Role
+    // MARK: - FETCH ROLE
+    func fetchRole() async -> String {
 
-    func fetchRole() async throws -> String {
-
-        let session = try await client.auth.session
-
-        struct Profile: Decodable {
-
-            let role: String
+        guard let userId = client.auth.currentUser?.id.uuidString else {
+            return "user"
         }
 
-        let profile: Profile = try await client
-            .from("profiles")
-            .select("role")
-            .eq("id", value: session.user.id)
-            .single()
-            .execute()
-            .value
+        do {
 
-        return profile.role
+            let response: [Profile] = try await client
+                .from("profiles")
+                .select("*")
+                .eq("id", value: userId)
+                .execute()
+                .value
+
+            return response.first?.role ?? "user"
+
+        } catch {
+
+            print("❌ FETCH ROLE ERROR:", error)
+
+            return "user"
+        }
     }
 }
+

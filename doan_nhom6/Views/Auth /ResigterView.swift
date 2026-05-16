@@ -1,150 +1,235 @@
 import SwiftUI
+import Supabase
 
-struct RegisterView: View {
+enum UserRole: String, Codable, CaseIterable {
 
-    @State private var username = ""
-    @State private var email = ""
-    @State private var password = ""
+    case user
 
-    @State private var selectedRole = "free_user"
+    case premium
 
-    let roles = [
-        "free_user",
-        "premium_user",
-        "artist"
-    ]
+    case artist
 
-    @State private var errorMessage = ""
-    @State private var isLoading = false
+    case admin
 
-    var body: some View {
+    
 
-        ZStack {
+    var displayName: String {
 
-            LinearGradient(
-                colors: [.black, .purple],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+        switch self {
 
-            VStack(spacing: 20) {
+        case .user:
 
-                Spacer()
+            return "Free User"
 
-                Text("Create Account")
-                    .font(.largeTitle.bold())
-                    .foregroundColor(.white)
+        case .premium:
 
-                Group {
+            return "Premium User"
 
-                    TextField("Username", text: $username)
-                        .textInputAutocapitalization(.never)
+        case .artist:
 
-                    TextField("Email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .textInputAutocapitalization(.never)
+            return "Artist"
 
-                    SecureField("Password", text: $password)
-                }
-                .padding()
-                .background(Color.white.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 18))
-                .foregroundColor(.white)
+        case .admin:
 
-                Picker("Role", selection: $selectedRole) {
+            return "Admin"
 
-                    ForEach(roles, id: \.self) { role in
-
-                        Text(role)
-                    }
-                }
-                .pickerStyle(.menu)
-                .tint(.white)
-
-                Button {
-
-                    Task {
-
-                        await register()
-                    }
-
-                } label: {
-
-                    ZStack {
-
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.white)
-                            .frame(height: 56)
-
-                        if isLoading {
-
-                            ProgressView()
-
-                        } else {
-
-                            Text("Create Account")
-                                .fontWeight(.bold)
-                                .foregroundColor(.black)
-                        }
-                    }
-                }
-                .disabled(isLoading)
-
-                if !errorMessage.isEmpty {
-
-                    Text(errorMessage)
-                        .foregroundColor(.red)
-                        .multilineTextAlignment(.center)
-                }
-
-                Spacer()
-            }
-            .padding()
         }
+
     }
 
-    // MARK: - Register
-
+}
+struct RegisterView: View {
+    
+    @Environment(\.dismiss) private var dismiss
+    
+    @State private var username = ""
+    
+    @State private var email = ""
+    
+    @State private var password = ""
+    
+    @State private var selectedRole: UserRole = .user
+    
+    @State private var errorMessage = ""
+    
+    @State private var isLoading = false
+    
+    var body: some View {
+        
+        ZStack {
+            
+            LinearGradient(
+                
+                colors: [.black, .purple],
+                
+                startPoint: .topLeading,
+                
+                endPoint: .bottomTrailing
+                
+            )
+            
+            .ignoresSafeArea()
+            
+            VStack(spacing: 22) {
+                
+                Spacer()
+                
+                Text("Create Account")
+                
+                    .font(.largeTitle.bold())
+                
+                    .foregroundColor(.white)
+                
+                VStack(spacing: 16) {
+                    
+                    TextField("Username", text: $username)
+                    
+                        .textInputAutocapitalization(.never)
+                    
+                    TextField("Email", text: $email)
+                    
+                        .keyboardType(.emailAddress)
+                    
+                        .textInputAutocapitalization(.never)
+                    
+                    SecureField("Password", text: $password)
+                    
+                }
+                
+                .padding()
+                
+                .background(Color.white.opacity(0.08))
+                
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                
+                .foregroundColor(.white)
+                
+                // ROLE PICKER
+                
+                Picker("Role", selection: $selectedRole) {
+                    
+                    ForEach(
+                        
+                        [
+                            
+                            UserRole.user,
+                            
+                            UserRole.premium,
+                            
+                            UserRole.artist
+                            
+                        ],
+                        
+                        id: \.self
+                        
+                    ) { role in
+                        
+                        Text(role.displayName)
+                        
+                            .tag(role)
+                        
+                    }
+                    
+                }
+                
+                .pickerStyle(.menu)
+                
+                .tint(.white)
+                
+                // BUTTON
+                
+                Button {
+                    
+                    Task {
+                        
+                        await register()
+                        
+                    }
+                    
+                } label: {
+                    
+                    ZStack {
+                        
+                        RoundedRectangle(cornerRadius: 20)
+                        
+                            .fill(Color.white)
+                        
+                            .frame(height: 56)
+                        
+                        if isLoading {
+                            
+                            ProgressView()
+                            
+                        } else {
+                            
+                            Text("Create Account")
+                            
+                                .fontWeight(.bold)
+                            
+                                .foregroundColor(.black)
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+                .disabled(isLoading)
+                
+                if !errorMessage.isEmpty {
+                    
+                    Text(errorMessage)
+                    
+                        .foregroundColor(.red)
+                    
+                        .multilineTextAlignment(.center)
+                    
+                }
+                
+                Spacer()
+                
+            }
+            
+            .padding()
+            
+        }
+        
+    }
+    
+    // MARK: REGISTER
+    
     func register() async {
-
+        
         errorMessage = ""
-
-        if username.isEmpty ||
-            email.isEmpty ||
-            password.isEmpty {
-
+        
+        guard !username.isEmpty,
+              !email.isEmpty,
+              !password.isEmpty else {
             errorMessage = "Please fill all fields"
             return
         }
-
-        if password.count < 6 {
-
+        
+        guard password.count >= 6 else {
             errorMessage = "Password must be at least 6 characters"
             return
         }
-
+        
         isLoading = true
-
+        
         do {
-
             try await AuthService.shared.register(
                 email: email,
                 password: password,
                 username: username,
-                role: selectedRole
+                role: selectedRole.rawValue
             )
-
+            
+            dismiss()
+            
         } catch {
-
             errorMessage = error.localizedDescription
         }
-
+        
         isLoading = false
     }
-}
-
-#Preview {
-
-    RegisterView()
 }

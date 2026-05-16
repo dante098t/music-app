@@ -6,3 +6,17 @@
 //
 
 import Foundation
+struct Playlist: Codable, Identifiable {
+
+    let id: UUID
+
+    let user_id: UUID
+
+    let title: String
+
+    let cover_url: String?
+
+    let is_public: Bool
+
+    let created_at: String?
+}

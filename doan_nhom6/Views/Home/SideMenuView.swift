@@ -1,10 +1,10 @@
 import SwiftUI
-
+import Combine
 struct SideMenuView: View {
     
     let recentSongs: [Song]
-    let favoriteSongs: [Song]
-    let savedAlbums: [Album]
+  
+    @StateObject private var vm = SideMenuViewModel()
     
     @Binding var isPresented: Bool   // ← Thêm Binding này
     
@@ -55,14 +55,22 @@ struct SideMenuView: View {
                             
                             // Favorite Songs
                             menuSection(title: "Favorite Songs", icon: "heart.fill")
-                            if favoriteSongs.isEmpty {
+                            if vm.favoriteSongs.isEmpty {
+
                                 Text("you suck")
+
                                     .foregroundColor(.gray)
+
                                     .padding(.horizontal)
+
                             } else {
-                                ForEach(favoriteSongs.prefix(5)) { song in
+
+                                ForEach(vm.favoriteSongs.prefix(5)) { song in
+
                                     SongRow(song: song)
+
                                 }
+
                             }
                             
                             // Recently Played
@@ -79,14 +87,14 @@ struct SideMenuView: View {
                             
                             // Saved Albums
                             menuSection(title: "Saved Albums", icon: "square.stack.fill")
-                            if savedAlbums.isEmpty {
+                            if vm.savedAlbums.isEmpty {
                                 Text("album???")
                                     .foregroundColor(.gray)
                                     .padding(.horizontal)
                             } else {
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 16) {
-                                        ForEach(savedAlbums.prefix(4)) { album in
+                                        ForEach(vm.savedAlbums.prefix(4)) { album in
                                             AlbumCardMini(album: album)
                                         }
                                     }
@@ -120,6 +128,16 @@ struct SideMenuView: View {
                 .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isPresented)
                 
                 Spacer()
+            }
+            .onAppear {
+
+                Task {
+                    await vm.fetchFavoriteSongs()
+
+                           await vm.fetchSavedAlbums()
+
+                }
+
             }
         }
     }

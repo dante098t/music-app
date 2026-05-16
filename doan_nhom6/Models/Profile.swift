@@ -1,14 +1,12 @@
-//
-//  Profile.swift
-//  doan_nhom6
-//
-//  Created by macbook on 9/5/26.
-//
-
 import Foundation
-enum UserRole: String, Codable {
-    case user
-    case premium
-    case artist
-    case admin
+
+struct Profile: Codable, Identifiable {
+
+    let id: String
+    let userId:UUID
+    let name: String
+    let email: String?
+    let role: String
+    let premium:Bool
+    let is_banned:Bool
 }

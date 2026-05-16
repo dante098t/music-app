@@ -2,7 +2,8 @@ import SwiftUI
 
 struct HomeView: View {
 
-    @StateObject private var viewModel = HomeViewModel()
+    @StateObject private var viewModel =
+    HomeViewModel()
 
     @StateObject private var recentManager =
     RecentlyPlayedManager.shared
@@ -12,139 +13,275 @@ struct HomeView: View {
 
     var body: some View {
 
-        ZStack(alignment: .leading) {
+        NavigationStack {
 
-            // MARK: MAIN
+            ZStack(alignment: .leading) {
 
-            ZStack {
+                // MARK: MAIN
 
-                AnimatedBackgroundView()
+                ZStack {
 
-                ScrollView(showsIndicators: false) {
+                    AnimatedBackgroundView()
 
-                    VStack(alignment: .leading, spacing: 28) {
+                    ScrollView(
+                        showsIndicators: false
+                    ) {
 
-                        headerSection
+                        VStack(
+                            alignment: .leading,
+                            spacing: 24
+                        ) {
 
-                        searchSection
+                            headerSection
 
-                        PremiumBanner()
+                            searchSection
 
-                        trendingSection
+                            PremiumBanner()
 
-                        recentlyPlayedSection
-                    }
-                    .padding()
-                }
+                            trendingSection
 
-                if showMenu {
+                            recentlyPlayedSection
 
-                    Color.black.opacity(0.45)
-                        .ignoresSafeArea()
-                        .onTapGesture {
-
-                            withAnimation {
-
-                                showMenu = false
-                            }
+                            Spacer(minLength: 100)
                         }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 10)
+                    }
+                    .safeAreaInset(
+                        edge: .bottom
+                    ) {
+
+                        Color.clear
+                            .frame(height: 20)
+                    }
+
+                    // MARK: OVERLAY
+
+                    if showMenu {
+
+                        Color.black.opacity(0.45)
+                            .ignoresSafeArea()
+
+                            .onTapGesture {
+
+                                withAnimation(.spring) {
+
+                                    showMenu = false
+                                }
+                            }
+                    }
                 }
+
+                // MARK: SIDE MENU
+
+                SideMenuView(
+
+                    recentSongs: recentManager.songs,
+
+                   
+
+                    isPresented: $showMenu
+
+                )
+
+                .frame(width: 300)
+
+                .offset(
+                    x: showMenu
+                    ? 0
+                    : -300
+                )
+
+                .animation(
+                    .spring(
+                        response: 0.35,
+                        dampingFraction: 0.82
+                    ),
+                    value: showMenu
+                )
+                .zIndex(1)
             }
+            .preferredColorScheme(.dark)
 
-            // MARK: SIDE MENU
+            .task {
 
-            SideMenuView(
-                recentSongs: recentManager.songs,
-                favoriteSongs: viewModel.favoriteSongs,
-                savedAlbums: viewModel.savedAlbums,
-                isPresented: $showMenu
-            )
-            .frame(width: 300)
-            .offset(x: showMenu ? 0 : -320)
-            .animation(.spring(response: 0.35), value: showMenu)
-        }
-        .preferredColorScheme(.dark)
-        .task {
+                await viewModel.fetchSongs()
 
-            await viewModel.fetchSongs()
-            await viewModel.fetchAlbums()
+                await viewModel.fetchAlbums()
+            }
         }
     }
 }
+
+// MARK: EXTENSION
+
 extension HomeView {
+
+    // MARK: HEADER
 
     var headerSection: some View {
 
-        HStack {
+        HStack(alignment: .center) {
 
             Button {
 
-                withAnimation {
+                withAnimation(.spring) {
+
                     showMenu.toggle()
                 }
 
             } label: {
 
-                Image(systemName: "line.3.horizontal")
-                    .font(.title2)
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(.ultraThinMaterial)
-                    .clipShape(Circle())
+                Image(
+                    systemName:
+                        "line.3.horizontal"
+                )
+                .font(.system(size: 18))
+
+                .foregroundColor(.white)
+
+                .frame(
+                    width: 44,
+                    height: 44
+                )
+
+                .background(
+                    .ultraThinMaterial
+                )
+
+                .clipShape(Circle())
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(
+                alignment: .leading,
+                spacing: 2
+            ) {
 
                 Text("Welcome Back")
+                    .font(.caption)
                     .foregroundColor(.gray)
 
                 Text("Discover Music")
-                    .font(.system(size: 34, weight: .bold))
+                    .font(
+                        .system(
+                            size: 26,
+                            weight: .bold
+                        )
+                    )
+
                     .foregroundStyle(
+
                         LinearGradient(
-                            colors: [.white, .pink],
+
+                            colors: [
+
+                                .white,
+                                .pink
+                            ],
+
                             startPoint: .leading,
+
                             endPoint: .trailing
                         )
                     )
+
+                    .lineLimit(1)
+
+                    .minimumScaleFactor(0.8)
             }
 
             Spacer()
 
-            Image(systemName: "bell.fill")
-                .foregroundColor(.white)
-                .padding()
-                .background(.ultraThinMaterial)
-                .clipShape(Circle())
+            Button {
+
+            } label: {
+
+                Image(systemName: "bell.fill")
+
+                    .font(.system(size: 17))
+
+                    .foregroundColor(.white)
+
+                    .frame(
+                        width: 44,
+                        height: 44
+                    )
+
+                    .background(
+                        .ultraThinMaterial
+                    )
+
+                    .clipShape(Circle())
+            }
         }
     }
+
+    // MARK: SEARCH
 
     var searchSection: some View {
 
-        HStack {
+        HStack(spacing: 12) {
 
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.gray)
+            Image(
+                systemName:
+                    "magnifyingglass"
+            )
+            .foregroundColor(.gray)
 
-            TextField("Search songs, artists...", text: $searchText)
-                .foregroundColor(.white)
+            TextField(
+                "Search songs, artists...",
+                text: $searchText
+            )
+            .foregroundColor(.white)
+
+            if !searchText.isEmpty {
+
+                Button {
+
+                    searchText = ""
+
+                } label: {
+
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.gray)
+                }
+            }
         }
-        .padding()
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .padding(.horizontal, 16)
+        .frame(height: 54)
+
+        .background(
+            .ultraThinMaterial
+        )
+
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: 18
+            )
+        )
     }
+
+    // MARK: TRENDING
 
     var trendingSection: some View {
 
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(
+            alignment: .leading,
+            spacing: 16
+        ) {
 
             Text("Trending Albums")
-                .font(.title2.bold())
+
+                .font(.title3.bold())
+
                 .foregroundColor(.white)
 
-            ScrollView(.horizontal, showsIndicators: false) {
+            ScrollView(
+                .horizontal,
+                showsIndicators: false
+            ) {
 
-                HStack(spacing: 20) {
+                LazyHStack(spacing: 16) {
 
                     ForEach(viewModel.albums) { album in
 
@@ -152,49 +289,72 @@ extension HomeView {
 
                             AlbumDetailView(
                                 album: album,
-                                songs: viewModel.songs.filter { $0.album_id == album.id }
+                                songs: viewModel.songs.filter {
+                                    $0.album_id == album.id
+                                }
                             )
 
                         } label: {
 
                             AlbumCard(album: album)
                         }
+                        .buttonStyle(.plain)
                     }
                 }
+                .padding(.horizontal, 2)
+                .padding(.vertical, 4)
             }
+            .frame(height: 245)
         }
     }
+    // MARK: RECENT
 
     var recentlyPlayedSection: some View {
 
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(
+            alignment: .leading,
+            spacing: 16
+        ) {
 
             HStack {
 
                 Text("Recently Played")
-                    .font(.title2.bold())
+
+                    .font(.title3.bold())
+
                     .foregroundColor(.white)
 
                 Spacer()
 
                 NavigationLink {
 
-                    RecentlyPlayedView(songs: recentManager.songs)
+                    RecentlyPlayedView(
+                        songs: recentManager.songs
+                    )
 
                 } label: {
 
                     Text("See All")
+
+                        .font(.subheadline.bold())
+
                         .foregroundColor(.pink)
                 }
             }
 
-            VStack(spacing: 16) {
-
-                ForEach(Array(viewModel.songs.prefix(5))) { song in
+            LazyVStack(spacing: 14) {
+                ForEach(
+                    Array(
+                        viewModel.songs.prefix(5)
+                    )
+                ) { song in
 
                     NavigationLink {
 
-                        PlayerView(song: song, songs: viewModel.songs)
+                        PlayerView(
+                            song: song,
+                            songs: viewModel.songs
+                        )
 
                     } label: {
 
@@ -205,3 +365,4 @@ extension HomeView {
         }
     }
 }
+

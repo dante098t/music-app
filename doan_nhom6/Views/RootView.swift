@@ -5,9 +5,7 @@ import Auth
 struct RootView: View {
 
     @State private var isLoggedIn = false
-
-    @State private var role = ""
-
+    @State private var role: UserRole = .user
     @State private var isLoading = true
 
     var body: some View {
@@ -15,6 +13,8 @@ struct RootView: View {
         NavigationStack {
 
             Group {
+
+                // MARK: LOADING
 
                 if isLoading {
 
@@ -27,21 +27,36 @@ struct RootView: View {
                             .tint(.white)
                     }
 
-                } else if isLoggedIn {
+                }
+
+                // MARK: AUTHENTICATED
+
+                else if isLoggedIn {
 
                     switch role {
 
-                    case "admin":
+                    case .admin:
 
                         AdminView()
 
-                    
-                    default:
+                    case .artist:
+
+                        ArtistDashboardView()
+
+                    case .premium:
+
+                        PremiumHomeView()
+
+                    case .user:
 
                         HomeView()
                     }
 
-                } else {
+                }
+
+                // MARK: LOGIN
+
+                else {
 
                     LoginView {
 
@@ -53,12 +68,23 @@ struct RootView: View {
                 }
             }
         }
-        .task {
 
-            await checkSession()
+        // 👇 chỉ gọi 1 lần
+        .onAppear {
+
+            Task {
+
+                await checkSession()
+            }
         }
     }
+}
 
+// MARK: - SESSION
+
+extension RootView {
+
+    @MainActor
     func checkSession() async {
 
         isLoading = true
@@ -70,23 +96,33 @@ struct RootView: View {
 
         do {
 
-            let session =
-            try await SupabaseService
+            // CHECK SESSION
+
+            let session = try await SupabaseService
                 .shared
                 .client
                 .auth
                 .session
 
-            print(session.user.email ?? "")
+            print("Logged in:", session.user.email ?? "")
 
-            role =
-            try await AuthService
+            // FETCH ROLE
+
+            let roleString = try await AuthService
                 .shared
                 .fetchRole()
+
+            // CONVERT STRING -> ENUM
+
+            role = UserRole(rawValue: roleString) ?? .user
+
+            // SUCCESS
 
             isLoggedIn = true
 
         } catch {
+
+            print("Session error:", error)
 
             isLoggedIn = false
         }

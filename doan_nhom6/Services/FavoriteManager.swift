@@ -1,119 +1,135 @@
 import Foundation
+import SwiftUI
+import Supabase
 import Combine
 
+struct Favorite: Codable, Identifiable {
+    let id: UUID
+    let user_id: UUID
+    let song_id: Int64
+    let created_at: String?
+}
+
+struct FavoriteInsert: Encodable {
+    let user_id: String
+    let song_id: Int64
+}
+
 final class FavoriteManager: ObservableObject {
-    let objectWillChange = ObservableObjectPublisher()
-    
 
-    static let shared =
-    FavoriteManager()
+    static let shared = FavoriteManager()
 
-    // MARK: Favorites
+    @Published var favoriteSongs: [Song] = []
 
-    @Published var songs:
-    [Song] = []
+    private let client = SupabaseService.shared.client
 
-    // MARK: Storage Key
+    private init() {}
 
-    private let key =
-    "favorite_songs"
-
-    // MARK: Init
-
-    private init() {
-        // Load persisted favorites without using self before init completes
-        if let data = UserDefaults.standard.data(forKey: key) {
-            if let decoded = try? JSONDecoder().decode([Song].self, from: data) {
-                self.songs = decoded
-            }
-        }
+    func isFavorite(_ song: Song) -> Bool {
+        favoriteSongs.contains { $0.id == song.id }
     }
-
-    // MARK: Toggle Favorite
-
-    func toggle(
-        _ song: Song
-    ) {
+    func toggle(_ song: Song) {
 
         if isFavorite(song) {
+
+            print("💔 REMOVE FAVORITE")
 
             remove(song)
 
         } else {
 
+            print("❤️ ADD FAVORITE")
+
             add(song)
+
         }
 
-        save()
     }
 
-    // MARK: Add
+    func add(_ song: Song) {
 
-    func add(
-        _ song: Song
-    ) {
+        guard let userId = client.auth.currentUser?.id else { return }
 
-        guard !songs.contains(
-            where: {
-                $0.id == song.id
+        let songId = song.id
+
+        Task {
+            do {
+                try await client
+                    .from("favorites")
+                    .insert(
+                        FavoriteInsert(
+                            user_id: userId.uuidString,
+                            song_id: songId
+                        )
+                    )
+                    .execute()
+
+                await MainActor.run {
+                    self.favoriteSongs.append(song)
+                }
+
+            } catch {
+                print("ADD FAVORITE ERROR:", error)
             }
-        ) else {
-            return
         }
-
-        songs.insert(
-            song,
-            at: 0
-        )
-
-        save()
+        print("🚀 SENDING FAVORITE TO SUPABASE")
+        print("USER:", userId.uuidString)
+        print("SONG:", songId)
     }
 
-    // MARK: Remove
+    func remove(_ song: Song) {
 
-    func remove(
-        _ song: Song
-    ) {
+        guard let userId = client.auth.currentUser?.id else { return }
 
-        songs.removeAll {
-            $0.id == song.id
+        let songId = song.id
+
+        Task {
+            do {
+                try await client
+                    .from("favorites")
+                    .delete()
+                    .eq("user_id", value: userId.uuidString)
+                    .eq("song_id", value: Int(songId) ?? String(songId))
+                    .execute()
+
+                await MainActor.run {
+                    self.favoriteSongs.removeAll { $0.id == song.id }
+                }
+
+            } catch {
+                print("REMOVE FAVORITE ERROR:", error)
+            }
         }
-
-        save()
+        print("🗑 REMOVE FAVORITE FROM SUPABASE")
+        print("USER:", userId.uuidString)
+        print("SONG:", songId)
     }
 
-    // MARK: Check
+    func fetchFavorites(allSongs: [Song]) async {
 
-    func isFavorite(
-        _ song: Song
-    ) -> Bool {
-
-        songs.contains {
-            $0.id == song.id
-        }
-    }
-
-    // MARK: Save
-
-    private func save() {
+        guard let userId = client.auth.currentUser?.id else { return }
 
         do {
+            let response: [Favorite] = try await client
+                .from("favorites")
+                .select("*")
+                .eq("user_id", value: userId.uuidString)
+                .execute()
+                .value
 
-            let data =
-            try JSONEncoder()
-                .encode(songs)
+            let ids = Set(response.map { $0.song_id })
 
-            UserDefaults.standard.set(
-                data,
-                forKey: key
-            )
+            let songs = allSongs.filter { song in
+                ids.contains(song.id)
+            }
+
+            await MainActor.run {
+                self.favoriteSongs = songs
+            }
 
         } catch {
-
-            print(
-                "Save favorite error:",
-                error
-            )
+            print("FETCH FAVORITES ERROR:", error)
         }
     }
 }
+
