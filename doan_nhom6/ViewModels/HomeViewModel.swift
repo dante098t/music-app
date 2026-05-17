@@ -40,6 +40,7 @@ final class HomeViewModel: ObservableObject {
                     audio_url,
                 
                     album_id,
+                  genre,
                 
                     artist_id,
                 

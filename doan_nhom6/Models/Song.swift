@@ -13,4 +13,5 @@ struct Song: Identifiable, Codable, Equatable {
     // JOIN OBJECT
     let artist: Artist?
     let album: Album?
+    let genre : String?
 }

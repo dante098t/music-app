@@ -74,7 +74,7 @@ struct PlayerPremiumView: View {
     FavoriteManager.shared
     
     // MARK: STATES
-    
+    @State private var recommendedSongs: [Song] = []
     @State private var currentIndex: Int
     @State private var selectedMainMenuIndex = 0
     @State private var volume: Float = 0.5
@@ -176,6 +176,63 @@ struct PlayerPremiumView: View {
                 wheelSize * 0.38
                 
                 VStack(spacing: 24) {
+                    if !recommendedSongs.isEmpty {
+
+                        VStack(alignment: .leading, spacing: 12) {
+
+                            Text("Recommended \(currentSong.genre ?? "")")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding(.horizontal)
+
+                            ScrollView(.horizontal, showsIndicators: false) {
+
+                                HStack(spacing: 16) {
+
+                                    ForEach(recommendedSongs) { song in
+
+                                        VStack(spacing: 8) {
+
+                                            AsyncImage(
+                                                url: URL(string: song.image_url ?? "")
+                                            ) { image in
+
+                                                image
+                                                    .resizable()
+                                                    .scaledToFill()
+
+                                            } placeholder: {
+
+                                                ProgressView()
+                                            }
+                                            .frame(width: 90, height: 90)
+                                            .clipShape(
+                                                RoundedRectangle(cornerRadius: 14)
+                                            )
+
+                                            Text(song.title ?? "")
+                                                .font(.caption)
+                                                .foregroundColor(.white)
+                                                .lineLimit(1)
+                                                .frame(width: 90)
+
+                                        }
+                                        .onTapGesture {
+
+                                            if let index = songs.firstIndex(where: {
+                                                $0.id == song.id
+                                            }) {
+
+                                                currentIndex = index
+                                                playCurrentSong()
+                                            }
+                                        }
+                                    }
+                                }
+                                .padding(.horizontal)
+                            }
+                        }
+                    }
                     
                     Spacer()
                     
@@ -237,8 +294,8 @@ struct PlayerPremiumView: View {
                     // MARK: PROGRESS
                     
                     if PlayerPremiumMode == .normal ||
-                       PlayerPremiumMode == .seek ||
-                       PlayerPremiumMode == .favorite {
+                        PlayerPremiumMode == .seek ||
+                        PlayerPremiumMode == .favorite {
                         
                         VStack(spacing: 8) {
                             
@@ -288,12 +345,13 @@ struct PlayerPremiumView: View {
                         }
                         .padding(.horizontal)
                     }
+                    
                     // MARK: MAIN MENU MODE
-
+                    
                     if PlayerPremiumMode == .menu {
-
+                        
                         HStack(spacing: 42) {
-
+                            
                             ForEach(
                                 Array(
                                     PlayerMainMenu
@@ -302,9 +360,9 @@ struct PlayerPremiumView: View {
                                 ),
                                 id: \.offset
                             ) { index, item in
-
+                                
                                 VStack(spacing: 8) {
-
+                                    
                                     Image(systemName: item.icon)
                                         .font(
                                             .system(
@@ -312,7 +370,7 @@ struct PlayerPremiumView: View {
                                                 weight: .bold
                                             )
                                         )
-
+                                    
                                     Text(item.title)
                                         .font(.caption)
                                         .fontWeight(.semibold)
@@ -322,22 +380,22 @@ struct PlayerPremiumView: View {
                                     ? .white
                                     : .gray.opacity(0.45)
                                 )
-
+                                
                                 .scaleEffect(
                                     selectedMainMenuIndex == index
                                     ? 1.2
                                     : 1
                                 )
-
+                                
                                 .shadow(
                                     color:
                                         selectedMainMenuIndex == index
                                     ? .white.opacity(0.8)
                                     : .clear,
-
+                                    
                                     radius: 12
                                 )
-
+                                
                                 .animation(
                                     .easeInOut(duration: 0.15),
                                     value: selectedMainMenuIndex
@@ -582,42 +640,42 @@ struct PlayerPremiumView: View {
                             Button {
                                 // MENU CONFIRM
                                 if PlayerPremiumMode == .menu {
-                                            applyMainMenu()
-                                            return
-                                        }
-
+                                    applyMainMenu()
+                                    return
+                                }
+                                
                                 // FAVORITE CONFIRM
                                 if PlayerPremiumMode  == .favorite {
-
+                                    
                                     toggleFavorite()
-
-
+                                    
+                                    
                                     return
                                 }
                                 // OPTIONS CONFIRM
-
+                                
                                 if PlayerPremiumMode  == .options {
-
+                                    
                                     applyCurrentOption()
-
+                                    
                                     PlayerPremiumMode  = .normal
-
+                                    
                                     return
-
+                                    
                                 }
-
+                                
                                 // NORMAL PLAY / PAUSE
-
+                                
                                 if player.isPlaying {
-
+                                    
                                     player.pause()
-
+                                    
                                 } else {
-
+                                    
                                     player.resume()
-
+                                    
                                 }
-
+                                
                             } label: {
                                 
                                 Image(
@@ -671,7 +729,7 @@ struct PlayerPremiumView: View {
                                         
                                         Image(
                                             systemName:
-                                                WheelMenu
+                                                WheelPremiumMenu
                                                 .allCases[
                                                     selectedMenuIndex
                                                 ]
@@ -683,8 +741,8 @@ struct PlayerPremiumView: View {
                                         EmptyView()
                                     case .menu:
                                         Image(systemName: "checkmark.circle.fill")
-                                                     
-                                                        
+                                        
+                                        
                                     }
                                 }
                                 .font(.system(size: 28))
@@ -727,22 +785,30 @@ struct PlayerPremiumView: View {
                     player.setVolume(volume)
                     DispatchQueue.main.async {
                         
-                       
-
+                        
+                        
                     }
                     
-                    Task { await fetchArtist() }
+                    Task {
+                        await fetchArtist()
+                        await fetchRecommendedSongs()
+                    }
                     
                     playCurrentSong()
                     
                     player.onSongFinished = { nextSong() }
                 }
                 .onChange(of: currentSong.id) { _ in
-
+                     Task {
+                        
+                        await fetchRecommendedSongs()
+                        
+                    }
                     
                 }
             }
-        }
+        
+    }
         .sheet(isPresented: $showQueueSheet) {
             QueueView(
                 currentSongList: currentSongList,
@@ -1053,6 +1119,7 @@ struct PlayerPremiumView: View {
             secs
         )
     }
+   
     private func fetchArtist() async {
         
         do {
@@ -1079,6 +1146,45 @@ struct PlayerPremiumView: View {
             
             print(error)
             
+        }
+    }
+    private func fetchRecommendedSongs() async {
+
+        guard let genre = currentSong.genre else {
+            print("❌ Current song has no genre")
+            return
+
+        }
+
+        do {
+
+            let response: [Song] = try await SupabaseService.shared.client
+
+                .from("songs")
+
+                .select("""
+                    *,
+                    artist:artists(*)
+                """)
+
+                .eq("genre", value: genre)
+
+                .neq("id", value: "\(currentSong.id)")
+
+                .limit(10)
+
+                .execute()
+
+                .value
+            print("✅ Recommended Count: \(response.count)")
+            await MainActor.run {
+
+                self.recommendedSongs = response
+            }
+
+        } catch {
+
+            print("Fetch recommended songs error:", error)
         }
     }
     // MARK: - MENU HANDLING
