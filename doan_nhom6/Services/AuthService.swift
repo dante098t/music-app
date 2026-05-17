@@ -87,10 +87,13 @@ final class AuthService {
     }
 
     // MARK: - FETCH ROLE
-    func fetchRole() async -> String {
+    func fetchRole() async -> UserRole {
 
-        guard let userId = client.auth.currentUser?.id.uuidString else {
-            return "user"
+        guard let userId =
+                client.auth.currentUser?.id.uuidString
+        else {
+
+            return .user
         }
 
         do {
@@ -102,13 +105,13 @@ final class AuthService {
                 .execute()
                 .value
 
-            return response.first?.role ?? "user"
+            return response.first?.role ?? .user
 
         } catch {
 
             print("❌ FETCH ROLE ERROR:", error)
 
-            return "user"
+            return .user
         }
     }
 }

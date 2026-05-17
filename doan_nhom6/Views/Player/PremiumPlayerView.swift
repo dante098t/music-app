@@ -2,19 +2,39 @@ import SwiftUI
 import AVFoundation
 import Supabase
 
+// MARK: - MAIN MENU
+enum PlayerMainMenu: String, CaseIterable {
+    case queue = "Queue"
+    case eq = "EQ"
+
+    // case visualizer = "Visualizer"
+    
+    var icon: String {
+        switch self {
+        case .queue:
+            return "music.note.list"
+        case .eq:
+            return "slider.horizontal.3"
+    
+        }
+    }
+    
+    var title: String { rawValue }
+}
 // MARK: - PLAYER MODE
 
-enum PlayerMode {
+enum PlayerPremiumMode {
 
     case normal
     case seek
     case favorite
     case options
+    case menu
 }
 
 // MARK: - WHEEL MENU
 
-enum WheelMenu: String, CaseIterable {
+enum WheelPremiumMenu: String, CaseIterable {
 
     case off = "Off"
     case shuffle = "Shuffle"
@@ -38,7 +58,7 @@ enum WheelMenu: String, CaseIterable {
 
 // MARK: - PLAYER VIEW
 
-struct PlayerView: View {
+struct PlayerPremiumView: View {
     
     // MARK: DATA
     
@@ -56,16 +76,16 @@ struct PlayerView: View {
     // MARK: STATES
     
     @State private var currentIndex: Int
-    
+    @State private var selectedMainMenuIndex = 0
     @State private var volume: Float = 0.5
     @State private var artist: Artist?
     @State private var rotation: Double = 0
     @State private var lastAngle: Double = 0
     @State private var wheelAccumulator: Double = 0
-    
+    @State private var showQueueSheet = false
     @State private var previousTapCount = 0
     
-    @State private var playerMode: PlayerMode = .normal
+    @State private var PlayerPremiumMode : PlayerPremiumMode = .normal
     
     @State private var selectedMenuIndex = 0
     
@@ -123,14 +143,14 @@ struct PlayerView: View {
 
         // OPTIONS MODE
 
-        if playerMode == .options {
+        if PlayerPremiumMode  == .options {
 
             return .white
         }
 
         // ĐANG CHỌN FAVORITE MODE NHƯNG CHƯA FAVORITE
 
-        if playerMode == .favorite {
+        if PlayerPremiumMode  == .favorite {
 
             return .white
         }
@@ -216,7 +236,9 @@ struct PlayerView: View {
                     
                     // MARK: PROGRESS
                     
-                    if playerMode != .options {
+                    if PlayerPremiumMode == .normal ||
+                       PlayerPremiumMode == .seek ||
+                       PlayerPremiumMode == .favorite {
                         
                         VStack(spacing: 8) {
                             
@@ -266,12 +288,69 @@ struct PlayerView: View {
                         }
                         .padding(.horizontal)
                     }
-                    
+                    // MARK: MAIN MENU MODE
+
+                    if PlayerPremiumMode == .menu {
+
+                        HStack(spacing: 42) {
+
+                            ForEach(
+                                Array(
+                                    PlayerMainMenu
+                                        .allCases
+                                        .enumerated()
+                                ),
+                                id: \.offset
+                            ) { index, item in
+
+                                VStack(spacing: 8) {
+
+                                    Image(systemName: item.icon)
+                                        .font(
+                                            .system(
+                                                size: 30,
+                                                weight: .bold
+                                            )
+                                        )
+
+                                    Text(item.title)
+                                        .font(.caption)
+                                        .fontWeight(.semibold)
+                                }
+                                .foregroundColor(
+                                    selectedMainMenuIndex == index
+                                    ? .white
+                                    : .gray.opacity(0.45)
+                                )
+
+                                .scaleEffect(
+                                    selectedMainMenuIndex == index
+                                    ? 1.2
+                                    : 1
+                                )
+
+                                .shadow(
+                                    color:
+                                        selectedMainMenuIndex == index
+                                    ? .white.opacity(0.8)
+                                    : .clear,
+
+                                    radius: 12
+                                )
+
+                                .animation(
+                                    .easeInOut(duration: 0.15),
+                                    value: selectedMainMenuIndex
+                                )
+                            }
+                        }
+                        .padding(.top, 10)
+                    }
                     
                     
                     // MARK: OPTIONS MODE
                     
-                    if playerMode == .options {
+                    if PlayerPremiumMode  == .options {
                         
                         HStack(spacing: 42) {
                             
@@ -328,6 +407,7 @@ struct PlayerView: View {
                         }
                         .padding(.top, 10)
                     }
+                    
                     
                     // MARK: WHEEL
                     
@@ -425,22 +505,23 @@ struct PlayerView: View {
                             )
                         
                         // TOP
-                        
                         VStack {
-                            
-                            Text("MENU")
-                            
-                                .font(
-                                    .system(
-                                        size: 18,
-                                        weight: .bold
-                                    )
-                                )
-                                .foregroundColor(.white)
-                            
+                            Button {
+                                handleMenuTap()
+                            } label: {
+                                VStack(spacing: 4) {
+                                    Image(systemName: "ellipsis")
+                                        .font(.system(size: 26, weight: .semibold))
+                                        .foregroundColor(PlayerPremiumMode == .menu ? .white : .gray.opacity(0.7))
+                                    
+                                    Text("MENU")
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundColor(PlayerPremiumMode == .menu ? .white : .gray)
+                                }
+                            }
                             Spacer()
                         }
-                        .padding(.top, wheelSize * 0.14)
+                        .padding(.top, wheelSize * 0.10)
                         
                         // LEFT
                         
@@ -499,9 +580,14 @@ struct PlayerView: View {
                             Spacer()
                             
                             Button {
+                                // MENU CONFIRM
+                                if PlayerPremiumMode == .menu {
+                                            applyMainMenu()
+                                            return
+                                        }
 
                                 // FAVORITE CONFIRM
-                                if playerMode == .favorite {
+                                if PlayerPremiumMode  == .favorite {
 
                                     toggleFavorite()
 
@@ -510,11 +596,11 @@ struct PlayerView: View {
                                 }
                                 // OPTIONS CONFIRM
 
-                                if playerMode == .options {
+                                if PlayerPremiumMode  == .options {
 
                                     applyCurrentOption()
 
-                                    playerMode = .normal
+                                    PlayerPremiumMode  = .normal
 
                                     return
 
@@ -565,7 +651,7 @@ struct PlayerView: View {
                             
                                 .overlay {
                                     
-                                    switch playerMode {
+                                    switch PlayerPremiumMode  {
                                         
                                     case .seek:
                                         
@@ -595,6 +681,10 @@ struct PlayerView: View {
                                     case .normal:
                                         
                                         EmptyView()
+                                    case .menu:
+                                        Image(systemName: "checkmark.circle.fill")
+                                                     
+                                                        
                                     }
                                 }
                                 .font(.system(size: 28))
@@ -653,6 +743,13 @@ struct PlayerView: View {
                 }
             }
         }
+        .sheet(isPresented: $showQueueSheet) {
+            QueueView(
+                currentSongList: currentSongList,
+                currentIndex: $currentIndex,
+                onPlay: playCurrentSong
+            )
+        }
         
     }
     // MARK: WHEEL DRAG
@@ -707,7 +804,7 @@ struct PlayerView: View {
         
         // SEEK MODE
         
-        if playerMode == .seek {
+        if PlayerPremiumMode  == .seek {
             
             if wheelAccumulator > 15 {
                 
@@ -734,16 +831,27 @@ struct PlayerView: View {
             
             return
         }
-        
+        // MARK: MAIN MENU (Queue, EQ)
+        // MENU MODE - Vuốt bánh xe để chuyển Queue / EQ
+        if PlayerPremiumMode == .menu {
+            if wheelAccumulator > 35 {
+                selectedMainMenuIndex = (selectedMainMenuIndex + 1) % PlayerMainMenu.allCases.count
+                wheelAccumulator = 0
+            } else if wheelAccumulator < -35 {
+                selectedMainMenuIndex = (selectedMainMenuIndex - 1 + PlayerMainMenu.allCases.count) % PlayerMainMenu.allCases.count
+                wheelAccumulator = 0
+            }
+            return
+        }
         // OPTIONS MODE
         
-        if playerMode == .options {
+        if PlayerPremiumMode  == .options {
             
             if wheelAccumulator > 30 {
                 
                 selectedMenuIndex =
                 (selectedMenuIndex + 1)
-                % WheelMenu.allCases.count
+                % WheelPremiumMenu.allCases.count
                 
                 applyCurrentOption()
                 
@@ -753,7 +861,7 @@ struct PlayerView: View {
                 
                 selectedMenuIndex =
                 (selectedMenuIndex - 1
-                 + WheelMenu.allCases.count)
+                 + WheelPremiumMenu.allCases.count)
                 % WheelMenu.allCases.count
                 
                 applyCurrentOption()
@@ -782,25 +890,29 @@ struct PlayerView: View {
     
     private func handleCenterTap() {
         
-        switch playerMode {
+        switch PlayerPremiumMode  {
             
         case .normal:
             
-            playerMode = .seek
+            PlayerPremiumMode  = .seek
             
         case .seek:
             
-            playerMode = .favorite
+            PlayerPremiumMode  = .favorite
             
             
             
         case .favorite:
             
-            playerMode = .options
+            PlayerPremiumMode  = .options
             
-        case .options:
+        case .options, .menu:
             
-            playerMode = .normal
+            PlayerPremiumMode  = .normal
+            
+  
+              
+            
         }
     }
     
@@ -967,6 +1079,39 @@ struct PlayerView: View {
             
             print(error)
             
+        }
+    }
+    // MARK: - MENU HANDLING
+
+    private func handleMenuTap() {
+
+        if PlayerPremiumMode == .menu {
+
+            PlayerPremiumMode = .normal
+
+        } else {
+
+            PlayerPremiumMode = .menu
+
+            selectedMainMenuIndex = 0
+
+        }
+
+    }
+
+    // Khi nhấn nút Play (center) trong mode .menu
+    private func applyMainMenu() {
+        let selected = PlayerMainMenu.allCases[selectedMainMenuIndex]
+        
+        switch selected {
+        case .queue:
+            showQueueSheet = true
+        case .eq:
+            print("EQ chưa được implement")
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            PlayerPremiumMode = .normal
         }
     }
 }

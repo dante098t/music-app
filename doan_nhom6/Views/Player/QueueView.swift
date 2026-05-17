@@ -1,5 +1,23 @@
 import SwiftUI
+import Combine
+import Supabase
+final class QueueManager: ObservableObject {
 
+    static let shared = QueueManager()
+
+    @Published var queueSongs: [Song] = []
+
+    private init() {}
+
+    func addToQueue(_ song: Song) {
+
+        queueSongs.append(song)
+
+        print("🎵 Added to queue:", song.title)
+
+    }
+
+}
 struct QueueView: View {
 
     let currentSongList: [Song]

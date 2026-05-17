@@ -83,47 +83,53 @@ struct RootView: View {
 // MARK: - SESSION
 
 extension RootView {
-
+    
     @MainActor
     func checkSession() async {
-
+        
         isLoading = true
-
+        
         defer {
-
+            
             isLoading = false
         }
-
+        
         do {
-
+            
             // CHECK SESSION
-
+            
             let session = try await SupabaseService
                 .shared
                 .client
                 .auth
                 .session
-
-            print("Logged in:", session.user.email ?? "")
-
+            
+            print("✅ Logged in:", session.user.email ?? "")
+            
             // FETCH ROLE
+            
+            let fetchedRole = await AuthService
 
-            let roleString = try await AuthService
                 .shared
+
                 .fetchRole()
 
-            // CONVERT STRING -> ENUM
-
-            role = UserRole(rawValue: roleString) ?? .user
-
+            role = fetchedRole
+            
+            print("🎭 ROLE:", fetchedRole.rawValue)
+            
+            // SET ROLE
+            
+            role = fetchedRole
+            
             // SUCCESS
-
+            
             isLoggedIn = true
-
+            
         } catch {
-
-            print("Session error:", error)
-
+            
+            print("❌ Session error:", error)
+            
             isLoggedIn = false
         }
     }

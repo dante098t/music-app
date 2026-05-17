@@ -37,8 +37,7 @@ struct RecentlyPlayedView: View {
                         ForEach(songs) { song in
 
                             NavigationLink {
-
-                                PlayerView(
+                                PlayerRouterView(
                                     song: song,
                                     songs: songs
                                 )

@@ -234,7 +234,7 @@ extension AlbumDetailView {
 
                     NavigationLink {
 
-                        PlayerView(song: song, songs: songs)
+                        PlayerRouterView(song: song, songs: songs)
 
                     } label: {
 

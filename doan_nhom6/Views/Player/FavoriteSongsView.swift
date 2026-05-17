@@ -42,7 +42,7 @@ struct FavoriteSongsView: View {
 
                             NavigationLink {
 
-                                PlayerView(
+                                PlayerRouterView(
                                     song: song,
                                     songs:
                                     favoriteManager.favoriteSongs

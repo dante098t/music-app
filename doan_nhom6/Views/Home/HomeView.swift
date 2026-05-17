@@ -34,7 +34,7 @@ struct HomeView: View {
 
                             headerSection
 
-                            searchSection
+                           
 
                             PremiumBanner()
 
@@ -216,51 +216,7 @@ extension HomeView {
         }
     }
 
-    // MARK: SEARCH
-
-    var searchSection: some View {
-
-        HStack(spacing: 12) {
-
-            Image(
-                systemName:
-                    "magnifyingglass"
-            )
-            .foregroundColor(.gray)
-
-            TextField(
-                "Search songs, artists...",
-                text: $searchText
-            )
-            .foregroundColor(.white)
-
-            if !searchText.isEmpty {
-
-                Button {
-
-                    searchText = ""
-
-                } label: {
-
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.gray)
-                }
-            }
-        }
-        .padding(.horizontal, 16)
-        .frame(height: 54)
-
-        .background(
-            .ultraThinMaterial
-        )
-
-        .clipShape(
-            RoundedRectangle(
-                cornerRadius: 18
-            )
-        )
-    }
-
+    
     // MARK: TRENDING
 
     var trendingSection: some View {
@@ -351,7 +307,7 @@ extension HomeView {
 
                     NavigationLink {
 
-                        PlayerView(
+                        PlayerRouterView(
                             song: song,
                             songs: viewModel.songs
                         )

@@ -3,10 +3,15 @@ import Foundation
 struct Profile: Codable, Identifiable {
 
     let id: String
-    let userId:UUID
-    let name: String
+
+    let username: String?
+
     let email: String?
-    let role: String
-    let premium:Bool
-    let is_banned:Bool
+
+    let role: UserRole
+
+    let premium: Bool
+
+    let is_banned: Bool
+
 }
