@@ -24,7 +24,13 @@ final class HomeViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         
+        defer {
+            
+            isLoading = false
+        }
+        
         do {
+            
             let response: [Song] = try await client
             
                 .from("songs")
@@ -32,23 +38,43 @@ final class HomeViewModel: ObservableObject {
                 .select("""
                 
                     id,
-                
                     title,
-                
                     image_url,
-                
                     audio_url,
-                
                     album_id,
-                  genre,
-                
                     artist_id,
+                    duration,
+                    genre,
+                    lyrics,
+                    play_count,
+                    created_at,
+                    is_premium,
+                    status,
+                    is_explicit,
                 
-                    artist:artists(*),
+                    artist:artists(
+                        id,
+                        name,
+                        avatar_url,
+                        bio,
+                        verified,
+                        monthly_listeners,
+                        cover_url
+                    ),
                 
-                    album:albums(*)
+                    album:albums(
+                        id,
+                        title,
+                        cover_url,
+                        artist_id
+                    )
                 
                 """)
+            
+                .order(
+                    "created_at",
+                    ascending: false
+                )
             
                 .execute()
             
@@ -58,12 +84,29 @@ final class HomeViewModel: ObservableObject {
             
             print("🎵 SONGS LOADED:", response.count)
             
+            for song in response {
+                
+                print("""
+                
+                -------------------------
+                🎵 TITLE: \(song.title ?? "")
+                🎧 GENRE: \(song.genre ?? "NO GENRE")
+                👤 ARTIST: \(song.artist?.name ?? "NO ARTIST")
+                💎 PREMIUM: \(song.is_premium ?? false)
+                🔞 EXPLICIT: \(song.is_explicit ?? false)
+                📀 STATUS: \(song.status ?? "unknown")
+                -------------------------
+                
+                """)
+            }
+            
         } catch {
-            self.errorMessage = error.localizedDescription
+            
+            self.errorMessage =
+            error.localizedDescription
+            
             print("❌ SONG ERROR:", error)
         }
-        
-        isLoading = false
     }
     
     // MARK: ALBUMS

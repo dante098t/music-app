@@ -182,7 +182,7 @@ struct SongRow: View {
             .clipShape(RoundedRectangle(cornerRadius: 10))
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(song.title)
+                Text(song.title ?? "")
                     .foregroundColor(.white)
                     .font(.body)
                     .lineLimit(1)
