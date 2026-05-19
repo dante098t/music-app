@@ -44,8 +44,10 @@ struct RootView: View {
                         ArtistDashboardView()
 
                     case .premium:
-
-                        PremiumHomeView()
+                       
+                        ArtistDashboardView()
+                     
+                       // PremiumHomeView()
 
                     case .user:
 

@@ -174,647 +174,649 @@ struct PlayerPremiumView: View {
                 
                 let centerSize =
                 wheelSize * 0.38
-                
-                VStack(spacing: 24) {
-                    if !recommendedSongs.isEmpty {
-
-                        VStack(alignment: .leading, spacing: 12) {
-
-                            Text("Recommended \(currentSong.genre ?? "")")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .padding(.horizontal)
-
-                            ScrollView(.horizontal, showsIndicators: false) {
-
-                                HStack(spacing: 16) {
-
-                                    ForEach(recommendedSongs) { song in
-
-                                        VStack(spacing: 8) {
-
-                                            AsyncImage(
-                                                url: URL(string: song.image_url ?? "")
-                                            ) { image in
-
-                                                image
-                                                    .resizable()
-                                                    .scaledToFill()
-
-                                            } placeholder: {
-
-                                                ProgressView()
-                                            }
-                                            .frame(width: 90, height: 90)
-                                            .clipShape(
-                                                RoundedRectangle(cornerRadius: 14)
-                                            )
-
-                                            Text(song.title ?? "")
-                                                .font(.caption)
-                                                .foregroundColor(.white)
-                                                .lineLimit(1)
-                                                .frame(width: 90)
-
-                                        }
-                                        .onTapGesture {
-
-                                            if let index = songs.firstIndex(where: {
-                                                $0.id == song.id
-                                            }) {
-
-                                                currentIndex = index
-                                                playCurrentSong()
-                                            }
-                                        }
-                                    }
-                                }
-                                .padding(.horizontal)
-                            }
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 24) {
+                                 
+                        Spacer()
+                        
+                        // MARK: ALBUM
+                        
+                        AsyncImage(
+                            url: URL(
+                                string:
+                                    currentSong.image_url ?? ""
+                            )
+                        ) { image in
+                            
+                            image
+                                .resizable()
+                                .scaledToFill()
+                            
+                        } placeholder: {
+                            
+                            ProgressView()
                         }
-                    }
-                    
-                    Spacer()
-                    
-                    // MARK: ALBUM
-                    
-                    AsyncImage(
-                        url: URL(
-                            string:
-                                currentSong.image_url ?? ""
+                        .frame(
+                            width: albumSize,
+                            height: albumSize
                         )
-                    ) { image in
-                        
-                        image
-                            .resizable()
-                            .scaledToFill()
-                        
-                    } placeholder: {
-                        
-                        ProgressView()
-                    }
-                    .frame(
-                        width: albumSize,
-                        height: albumSize
-                    )
-                    .clipShape(
-                        RoundedRectangle(
-                            cornerRadius: 28
-                        )
-                    )
-                    .shadow(
-                        color: glowColor.opacity(0.6),
-                        radius: 25
-                    )
-                    
-                    // MARK: SONG INFO
-                    
-                    VStack(spacing: 6) {
-                        
-                        Text(
-                            currentSong.title
-                            ?? "Unknown"
-                        )
-                        .font(
-                            .system(
-                                size: 30,
-                                weight: .bold
+                        .clipShape(
+                            RoundedRectangle(
+                                cornerRadius: 28
                             )
                         )
-                        .foregroundColor(.white)
-                        
-                        Text(
-                            currentSong.artist?.name
-                            ?? "Unknown Artist"
+                        .shadow(
+                            color: glowColor.opacity(0.6),
+                            radius: 25
                         )
-                        .foregroundColor(.gray)
-                        .font(.title3)
-                    }
-                    
-                    // MARK: PROGRESS
-                    
-                    if PlayerPremiumMode == .normal ||
-                        PlayerPremiumMode == .seek ||
-                        PlayerPremiumMode == .favorite {
                         
-                        VStack(spacing: 8) {
+                        // MARK: SONG INFO
+                        
+                        VStack(spacing: 6) {
                             
-                            Slider(
-                                
-                                value: Binding(
-                                    
-                                    get: {
-                                        
-                                        player.currentTime
-                                    },
-                                    
-                                    set: { newValue in
-                                        
-                                        player.seek(
-                                            to: newValue
-                                        )
-                                    }
-                                    
-                                ),
-                                
-                                in: 0...max(
-                                    player.duration,
-                                    1
+                            Text(
+                                currentSong.title
+                                ?? "Unknown"
+                            )
+                            .font(
+                                .system(
+                                    size: 30,
+                                    weight: .bold
                                 )
                             )
-                            .tint(.white)
+                            .foregroundColor(.white)
                             
-                            HStack {
-                                
-                                Text(
-                                    formatTime(
-                                        player.currentTime
-                                    )
-                                )
-                                
-                                Spacer()
-                                
-                                Text(
-                                    formatTime(
-                                        player.duration
-                                    )
-                                )
-                            }
-                            .font(.caption)
+                            Text(
+                                currentSong.artist?.name
+                                ?? "Unknown Artist"
+                            )
                             .foregroundColor(.gray)
+                            .font(.title3)
                         }
-                        .padding(.horizontal)
-                    }
-                    
-                    // MARK: MAIN MENU MODE
-                    
-                    if PlayerPremiumMode == .menu {
                         
-                        HStack(spacing: 42) {
+                        // MARK: PROGRESS
+                        
+                        if PlayerPremiumMode == .normal ||
+                            PlayerPremiumMode == .seek ||
+                            PlayerPremiumMode == .favorite {
                             
-                            ForEach(
-                                Array(
-                                    PlayerMainMenu
-                                        .allCases
-                                        .enumerated()
-                                ),
-                                id: \.offset
-                            ) { index, item in
+                            VStack(spacing: 8) {
                                 
-                                VStack(spacing: 8) {
+                                Slider(
                                     
-                                    Image(systemName: item.icon)
-                                        .font(
-                                            .system(
-                                                size: 30,
-                                                weight: .bold
+                                    value: Binding(
+                                        
+                                        get: {
+                                            
+                                            player.currentTime
+                                        },
+                                        
+                                        set: { newValue in
+                                            
+                                            player.seek(
+                                                to: newValue
                                             )
-                                        )
+                                        }
+                                        
+                                    ),
                                     
-                                    Text(item.title)
-                                        .font(.caption)
-                                        .fontWeight(.semibold)
-                                }
-                                .foregroundColor(
-                                    selectedMainMenuIndex == index
-                                    ? .white
-                                    : .gray.opacity(0.45)
-                                )
-                                
-                                .scaleEffect(
-                                    selectedMainMenuIndex == index
-                                    ? 1.2
-                                    : 1
-                                )
-                                
-                                .shadow(
-                                    color:
-                                        selectedMainMenuIndex == index
-                                    ? .white.opacity(0.8)
-                                    : .clear,
-                                    
-                                    radius: 12
-                                )
-                                
-                                .animation(
-                                    .easeInOut(duration: 0.15),
-                                    value: selectedMainMenuIndex
-                                )
-                            }
-                        }
-                        .padding(.top, 10)
-                    }
-                    
-                    
-                    // MARK: OPTIONS MODE
-                    
-                    if PlayerPremiumMode  == .options {
-                        
-                        HStack(spacing: 42) {
-                            
-                            ForEach(
-                                Array(
-                                    WheelMenu
-                                        .allCases
-                                        .enumerated()
-                                ),
-                                id: \.offset
-                            ) { index, option in
-                                
-                                Image(
-                                    systemName:
-                                        option.icon
-                                )
-                                
-                                .font(
-                                    .system(
-                                        size: 30,
-                                        weight: .bold
+                                    in: 0...max(
+                                        player.duration,
+                                        1
                                     )
                                 )
+                                .tint(.white)
                                 
-                                .foregroundColor(
+                                HStack {
                                     
-                                    selectedMenuIndex == index
-                                    ? .white
-                                    : .gray.opacity(0.45)
-                                )
-                                
-                                .scaleEffect(
-                                    selectedMenuIndex == index
-                                    ? 1.25
-                                    : 1
-                                )
-                                
-                                .shadow(
+                                    Text(
+                                        formatTime(
+                                            player.currentTime
+                                        )
+                                    )
                                     
-                                    color:
+                                    Spacer()
+                                    
+                                    Text(
+                                        formatTime(
+                                            player.duration
+                                        )
+                                    )
+                                }
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                            }
+                            .padding(.horizontal)
+                        }
+                        
+                        // MARK: MAIN MENU MODE
+                        
+                        if PlayerPremiumMode == .menu {
+                            
+                            HStack(spacing: 42) {
+                                
+                                ForEach(
+                                    Array(
+                                        PlayerMainMenu
+                                            .allCases
+                                            .enumerated()
+                                    ),
+                                    id: \.offset
+                                ) { index, item in
+                                    
+                                    VStack(spacing: 8) {
+                                        
+                                        Image(systemName: item.icon)
+                                            .font(
+                                                .system(
+                                                    size: 30,
+                                                    weight: .bold
+                                                )
+                                            )
+                                        
+                                        Text(item.title)
+                                            .font(.caption)
+                                            .fontWeight(.semibold)
+                                    }
+                                    .foregroundColor(
+                                        selectedMainMenuIndex == index
+                                        ? .white
+                                        : .gray.opacity(0.45)
+                                    )
+                                    
+                                    .scaleEffect(
+                                        selectedMainMenuIndex == index
+                                        ? 1.2
+                                        : 1
+                                    )
+                                    
+                                    .shadow(
+                                        color:
+                                            selectedMainMenuIndex == index
+                                        ? .white.opacity(0.8)
+                                        : .clear,
+                                        
+                                        radius: 12
+                                    )
+                                    
+                                    .animation(
+                                        .easeInOut(duration: 0.15),
+                                        value: selectedMainMenuIndex
+                                    )
+                                }
+                            }
+                            .padding(.top, 10)
+                        }
+                        
+                        
+                        // MARK: OPTIONS MODE
+                        
+                        if PlayerPremiumMode  == .options {
+                            
+                            HStack(spacing: 42) {
+                                
+                                ForEach(
+                                    Array(
+                                        WheelMenu
+                                            .allCases
+                                            .enumerated()
+                                    ),
+                                    id: \.offset
+                                ) { index, option in
+                                    
+                                    Image(
+                                        systemName:
+                                            option.icon
+                                    )
+                                    
+                                    .font(
+                                        .system(
+                                            size: 30,
+                                            weight: .bold
+                                        )
+                                    )
+                                    
+                                    .foregroundColor(
                                         
                                         selectedMenuIndex == index
-                                    ? .white.opacity(0.8)
-                                    : .clear,
-                                    
-                                    radius: 12
-                                )
-                                
-                                .animation(
-                                    .easeInOut(duration: 0.15),
-                                    value: selectedMenuIndex
-                                )
-                            }
-                        }
-                        .padding(.top, 10)
-                    }
-                    
-                    
-                    // MARK: WHEEL
-                    
-                    ZStack {
-                        
-                        // OUTER RING
-                        
-                        Circle()
-                        
-                            .stroke(
-                                Color.white.opacity(0.08),
-                                lineWidth: 10
-                            )
-                        
-                        // ACTIVE RING
-                        
-                        Circle()
-                        
-                            .trim(
-                                from: 0,
-                                to: CGFloat(volume)
-                            )
-                        
-                            .stroke(
-                                
-                                glowColor,
-                                
-                                style: StrokeStyle(
-                                    
-                                    lineWidth: 8,
-                                    
-                                    lineCap: .round
-                                )
-                            )
-                        
-                            .rotationEffect(
-                                .degrees(-90)
-                            )
-                        
-                        // MAIN WHEEL
-                        
-                        Circle()
-                        
-                            .fill(
-                                
-                                LinearGradient(
-                                    
-                                    colors: [
-                                        
-                                        Color.white.opacity(0.18),
-                                        
-                                        Color.white.opacity(0.05)
-                                        
-                                    ],
-                                    
-                                    startPoint: .topLeading,
-                                    
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                        
-                            .overlay(
-                                
-                                Circle()
-                                
-                                    .stroke(
-                                        Color.white.opacity(0.08),
-                                        lineWidth: 1
+                                        ? .white
+                                        : .gray.opacity(0.45)
                                     )
-                            )
-                        
-                            .rotationEffect(
-                                .degrees(rotation)
-                            )
-                        
-                            .gesture(
-                                
-                                DragGesture(
-                                    minimumDistance: 0
-                                )
-                                
-                                .onChanged {
                                     
-                                    handleWheelDrag(
-                                        $0,
-                                        wheelSize: wheelSize
+                                    .scaleEffect(
+                                        selectedMenuIndex == index
+                                        ? 1.25
+                                        : 1
+                                    )
+                                    
+                                    .shadow(
+                                        
+                                        color:
+                                            
+                                            selectedMenuIndex == index
+                                        ? .white.opacity(0.8)
+                                        : .clear,
+                                        
+                                        radius: 12
+                                    )
+                                    
+                                    .animation(
+                                        .easeInOut(duration: 0.15),
+                                        value: selectedMenuIndex
                                     )
                                 }
-                                
-                                    .onEnded { _ in
+                            }
+                            .padding(.top, 10)
+                        }
+                        
+                        
+                        // MARK: WHEEL
+                        
+                        ZStack {
+                            
+                            // OUTER RING
+                            
+                            Circle()
+                            
+                                .stroke(
+                                    Color.white.opacity(0.08),
+                                    lineWidth: 10
+                                )
+                            
+                            // ACTIVE RING
+                            
+                            Circle()
+                            
+                                .trim(
+                                    from: 0,
+                                    to: CGFloat(volume)
+                                )
+                            
+                                .stroke(
+                                    
+                                    glowColor,
+                                    
+                                    style: StrokeStyle(
                                         
-                                        lastAngle = 0
-                                        wheelAccumulator = 0
-                                    }
-                            )
-                        
-                        // TOP
-                        VStack {
-                            Button {
-                                handleMenuTap()
-                            } label: {
-                                VStack(spacing: 4) {
-                                    Image(systemName: "ellipsis")
-                                        .font(.system(size: 26, weight: .semibold))
-                                        .foregroundColor(PlayerPremiumMode == .menu ? .white : .gray.opacity(0.7))
-                                    
-                                    Text("MENU")
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .foregroundColor(PlayerPremiumMode == .menu ? .white : .gray)
-                                }
-                            }
-                            Spacer()
-                        }
-                        .padding(.top, wheelSize * 0.10)
-                        
-                        // LEFT
-                        
-                        HStack {
-                            
-                            Button {
-                                
-                                handlePreviousTap()
-                                
-                            } label: {
-                                
-                                Image(
-                                    systemName:
-                                        "backward.fill"
+                                        lineWidth: 8,
+                                        
+                                        lineCap: .round
+                                    )
                                 )
-                                .font(.system(size: 28))
-                                .foregroundColor(.white)
-                            }
                             
-                            Spacer()
-                        }
-                        .padding(
-                            .leading,
-                            wheelSize * 0.10
-                        )
-                        
-                        // RIGHT
-                        
-                        HStack {
-                            
-                            Spacer()
-                            
-                            Button {
-                                
-                                nextSong()
-                                
-                            } label: {
-                                
-                                Image(
-                                    systemName:
-                                        "forward.fill"
+                                .rotationEffect(
+                                    .degrees(-90)
                                 )
-                                .font(.system(size: 28))
-                                .foregroundColor(.white)
-                            }
-                        }
-                        .padding(
-                            .trailing,
-                            wheelSize * 0.10
-                        )
-                        
-                        // PLAY
-                        
-                        VStack {
                             
-                            Spacer()
-                            
-                            Button {
-                                // MENU CONFIRM
-                                if PlayerPremiumMode == .menu {
-                                    applyMainMenu()
-                                    return
-                                }
-                                
-                                // FAVORITE CONFIRM
-                                if PlayerPremiumMode  == .favorite {
-                                    
-                                    toggleFavorite()
-                                    
-                                    
-                                    return
-                                }
-                                // OPTIONS CONFIRM
-                                
-                                if PlayerPremiumMode  == .options {
-                                    
-                                    applyCurrentOption()
-                                    
-                                    PlayerPremiumMode  = .normal
-                                    
-                                    return
-                                    
-                                }
-                                
-                                // NORMAL PLAY / PAUSE
-                                
-                                if player.isPlaying {
-                                    
-                                    player.pause()
-                                    
-                                } else {
-                                    
-                                    player.resume()
-                                    
-                                }
-                                
-                            } label: {
-                                
-                                Image(
-                                    systemName:
-                                        player.isPlaying
-                                    ? "pause.fill"
-                                    : "play.fill"
-                                )
-                                .font(.system(size: 34))
-                                .foregroundColor(.white)
-                            }
-                        }
-                        .padding(
-                            .bottom,
-                            wheelSize * 0.10
-                        )
-                        
-                        // CENTER BUTTON
-                        
-                        Button {
-                            
-                            handleCenterTap()
-                            
-                        } label: {
+                            // MAIN WHEEL
                             
                             Circle()
                             
                                 .fill(
-                                    Color.white.opacity(0.08)
+                                    
+                                    LinearGradient(
+                                        
+                                        colors: [
+                                            
+                                            Color.white.opacity(0.18),
+                                            
+                                            Color.white.opacity(0.05)
+                                            
+                                        ],
+                                        
+                                        startPoint: .topLeading,
+                                        
+                                        endPoint: .bottomTrailing
+                                    )
                                 )
                             
-                                .overlay {
+                                .overlay(
                                     
-                                    switch PlayerPremiumMode  {
-                                        
-                                    case .seek:
-                                        
-                                        Image(
-                                            systemName:
-                                                "goforward"
+                                    Circle()
+                                    
+                                        .stroke(
+                                            Color.white.opacity(0.08),
+                                            lineWidth: 1
                                         )
+                                )
+                            
+                                .rotationEffect(
+                                    .degrees(rotation)
+                                )
+                            
+                                .gesture(
+                                    
+                                    DragGesture(
+                                        minimumDistance: 0
+                                    )
+                                    
+                                    .onChanged {
                                         
-                                    case .favorite:
-                                        
-                                        Image(
-                                            systemName:
-                                                "heart.fill"
+                                        handleWheelDrag(
+                                            $0,
+                                            wheelSize: wheelSize
                                         )
+                                    }
+                                    
+                                        .onEnded { _ in
+                                            
+                                            lastAngle = 0
+                                            wheelAccumulator = 0
+                                        }
+                                )
+                            
+                            // TOP
+                            VStack {
+                                Button {
+                                    handleMenuTap()
+                                } label: {
+                                    VStack(spacing: 4) {
+                                        Image(systemName: "ellipsis")
+                                            .font(.system(size: 26, weight: .semibold))
+                                            .foregroundColor(PlayerPremiumMode == .menu ? .white : .gray.opacity(0.7))
                                         
-                                    case .options:
-                                        
-                                        Image(
-                                            systemName:
-                                                WheelPremiumMenu
-                                                .allCases[
-                                                    selectedMenuIndex
-                                                ]
-                                                .icon
-                                        )
-                                        
-                                    case .normal:
-                                        
-                                        EmptyView()
-                                    case .menu:
-                                        Image(systemName: "checkmark.circle.fill")
-                                        
-                                        
+                                        Text("MENU")
+                                            .font(.system(size: 13, weight: .semibold))
+                                            .foregroundColor(PlayerPremiumMode == .menu ? .white : .gray)
                                     }
                                 }
-                                .font(.system(size: 28))
-                                .foregroundColor(.white)
+                                Spacer()
+                            }
+                            .padding(.top, wheelSize * 0.10)
+                            
+                            // LEFT
+                            
+                            HStack {
+                                
+                                Button {
+                                    
+                                    handlePreviousTap()
+                                    
+                                } label: {
+                                    
+                                    Image(
+                                        systemName:
+                                            "backward.fill"
+                                    )
+                                    .font(.system(size: 28))
+                                    .foregroundColor(.white)
+                                }
+                                
+                                Spacer()
+                            }
+                            .padding(
+                                .leading,
+                                wheelSize * 0.10
+                            )
+                            
+                            // RIGHT
+                            
+                            HStack {
+                                
+                                Spacer()
+                                
+                                Button {
+                                    
+                                    nextSong()
+                                    
+                                } label: {
+                                    
+                                    Image(
+                                        systemName:
+                                            "forward.fill"
+                                    )
+                                    .font(.system(size: 28))
+                                    .foregroundColor(.white)
+                                }
+                            }
+                            .padding(
+                                .trailing,
+                                wheelSize * 0.10
+                            )
+                            
+                            // PLAY
+                            
+                            VStack {
+                                
+                                Spacer()
+                                
+                                Button {
+                                    // MENU CONFIRM
+                                    if PlayerPremiumMode == .menu {
+                                        applyMainMenu()
+                                        return
+                                    }
+                                    
+                                    // FAVORITE CONFIRM
+                                    if PlayerPremiumMode  == .favorite {
+                                        
+                                        toggleFavorite()
+                                        
+                                        
+                                        return
+                                    }
+                                    // OPTIONS CONFIRM
+                                    
+                                    if PlayerPremiumMode  == .options {
+                                        
+                                        applyCurrentOption()
+                                        
+                                        PlayerPremiumMode  = .normal
+                                        
+                                        return
+                                        
+                                    }
+                                    
+                                    // NORMAL PLAY / PAUSE
+                                    
+                                    if player.isPlaying {
+                                        
+                                        player.pause()
+                                        
+                                    } else {
+                                        
+                                        player.resume()
+                                        
+                                    }
+                                    
+                                } label: {
+                                    
+                                    Image(
+                                        systemName:
+                                            player.isPlaying
+                                        ? "pause.fill"
+                                        : "play.fill"
+                                    )
+                                    .font(.system(size: 34))
+                                    .foregroundColor(.white)
+                                }
+                            }
+                            .padding(
+                                .bottom,
+                                wheelSize * 0.10
+                            )
+                            
+                            // CENTER BUTTON
+                            
+                            Button {
+                                
+                                handleCenterTap()
+                                
+                            } label: {
+                                
+                                Circle()
+                                
+                                    .fill(
+                                        Color.white.opacity(0.08)
+                                    )
+                                
+                                    .overlay {
+                                        
+                                        switch PlayerPremiumMode  {
+                                            
+                                        case .seek:
+                                            
+                                            Image(
+                                                systemName:
+                                                    "goforward"
+                                            )
+                                            
+                                        case .favorite:
+                                            
+                                            Image(
+                                                systemName:
+                                                    "heart.fill"
+                                            )
+                                            
+                                        case .options:
+                                            
+                                            Image(
+                                                systemName:
+                                                    WheelPremiumMenu
+                                                    .allCases[
+                                                        selectedMenuIndex
+                                                    ]
+                                                    .icon
+                                            )
+                                            
+                                        case .normal:
+                                            
+                                            EmptyView()
+                                        case .menu:
+                                            Image(systemName: "checkmark.circle.fill")
+                                            
+                                            
+                                        }
+                                    }
+                                    .font(.system(size: 28))
+                                    .foregroundColor(.white)
+                            }
+                            .frame(
+                                width: centerSize,
+                                height: centerSize
+                            )
                         }
                         .frame(
-                            width: centerSize,
-                            height: centerSize
+                            width: wheelSize,
+                            height: wheelSize
                         )
+                        if !recommendedSongs.isEmpty {
+                            
+                            VStack(alignment: .leading, spacing: 12) {
+                                
+                                Text("Recommended \(currentSong.genre ?? "")")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal)
+                                
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    
+                                    HStack(spacing: 16) {
+                                        
+                                        ForEach(recommendedSongs) { song in
+                                            
+                                            VStack(spacing: 8) {
+                                                
+                                                AsyncImage(
+                                                    url: URL(string: song.image_url ?? "")
+                                                ) { image in
+                                                    
+                                                    image
+                                                        .resizable()
+                                                        .scaledToFill()
+                                                    
+                                                } placeholder: {
+                                                    
+                                                    ProgressView()
+                                                }
+                                                .frame(width: 90, height: 90)
+                                                .clipShape(
+                                                    RoundedRectangle(cornerRadius: 14)
+                                                )
+                                                
+                                                Text(song.title ?? "")
+                                                    .font(.caption)
+                                                    .foregroundColor(.white)
+                                                    .lineLimit(1)
+                                                    .frame(width: 90)
+                                                
+                                            }
+                                            .onTapGesture {
+                                                
+                                                if let index = songs.firstIndex(where: {
+                                                    $0.id == song.id
+                                                }) {
+                                                    
+                                                    currentIndex = index
+                                                    playCurrentSong()
+                                                }
+                                            }
+                                        }
+                                    }
+                                    .padding(.horizontal)
+                                }
+                            }
+                        }
+                        
+                        Spacer()
                     }
                     .frame(
-                        width: wheelSize,
-                        height: wheelSize
+                        maxWidth: .infinity,
+                        maxHeight: .infinity
                     )
-                    
-                    Spacer()
-                }
-                .frame(
-                    maxWidth: .infinity,
-                    maxHeight: .infinity
-                )
-                .onReceive(
-                    
-                    NotificationCenter.default.publisher(
+                    .onReceive(
                         
-                        for: .AVPlayerItemDidPlayToEndTime
+                        NotificationCenter.default.publisher(
+                            
+                            for: .AVPlayerItemDidPlayToEndTime
+                            
+                        )
                         
-                    )
+                    ) { _ in
+                        
+                        nextSong()
+                        
+                    }
                     
-                ) { _ in
-                    
-                    nextSong()
-                    
+                    .onAppear {
+                        
+                        RecentlyPlayedManager.shared.add(currentSong)
+                        
+                        player.setVolume(volume)
+                        DispatchQueue.main.async {
+                            
+                            
+                            
+                        }
+                        
+                        Task {
+                            await fetchArtist()
+                            await fetchRecommendedSongs()
+                        }
+                        
+                        playCurrentSong()
+                        
+                        player.onSongFinished = { nextSong() }
+                    }
+                    .onChange(of: currentSong.id) { _ in
+                        Task {
+                            
+                            await fetchRecommendedSongs()
+                            
+                        }
+                        
+                    }
                 }
                 
-                .onAppear {
-                    
-                    RecentlyPlayedManager.shared.add(currentSong)
-                    
-                    player.setVolume(volume)
-                    DispatchQueue.main.async {
-                        
-                        
-                        
-                    }
-                    
-                    Task {
-                        await fetchArtist()
-                        await fetchRecommendedSongs()
-                    }
-                    
-                    playCurrentSong()
-                    
-                    player.onSongFinished = { nextSong() }
-                }
-                .onChange(of: currentSong.id) { _ in
-                     Task {
-                        
-                        await fetchRecommendedSongs()
-                        
-                    }
-                    
-                }
             }
-        
-    }
-        .sheet(isPresented: $showQueueSheet) {
-            QueueView(
-                currentSongList: currentSongList,
-                currentIndex: $currentIndex,
-                onPlay: playCurrentSong
-            )
+            .sheet(isPresented: $showQueueSheet) {
+                QueueView(
+                    currentSongList: currentSongList,
+                    currentIndex: $currentIndex,
+                    onPlay: playCurrentSong
+                )
+            }
+            
         }
         
     }
@@ -1166,6 +1168,7 @@ struct PlayerPremiumView: View {
                     *,
                     artist:artists(*)
                 """)
+                .eq("status", value: "approved")
 
                 .eq("genre", value: genre)
 

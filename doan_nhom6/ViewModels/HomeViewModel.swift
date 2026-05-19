@@ -70,7 +70,7 @@ final class HomeViewModel: ObservableObject {
                     )
                 
                 """)
-            
+                .eq("status", value: "approved")
                 .order(
                     "created_at",
                     ascending: false

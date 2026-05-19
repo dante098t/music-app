@@ -108,6 +108,7 @@ final class SideMenuViewModel: ObservableObject {
                         )
 
                     """)
+                    .eq("status", value: "approved")
 
                     .in("id", values: ids)
 

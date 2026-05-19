@@ -32,3 +32,20 @@ struct Song: Identifiable, Codable, Equatable {
 
        let artist: Artist?
 }
+
+struct SongInsert: Encodable {
+
+    let title: String
+    let image_url: String
+    let audio_url: String
+
+    let genre: String
+    let lyrics: String
+
+    let artist_id: String
+
+    let is_premium: Bool
+    let is_explicit: Bool
+
+    let status: String
+}
