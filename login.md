@@ -224,11 +224,11 @@ Start
 | Register | ✓ | ✓ | ✓ | ✓ |
 | Login | ✓ | ✓ | ✓ | ✓ |
 | Logout | ✓ | ✓ | ✓ | ✓ |
-| Search Music | ✓ | ✓ | ✓ | ✓ |
+| Search Music | ✓ | ✓ | x | ✓ |
 | Play Music | ✓ | ✓ | ✓ | ✓ |
-| Upload Song | ✗ | ✓ | ✗ | ✗ |
+| Upload Song | ✓ | ✓ | ✗ | ✗ |
 | Manage Users | ✓ | ✗ | ✗ | ✗ |
-| Create Playlist | ✗ | ✓ | ✓ | ✓ |
+| Create Playlist | ✗ | x | x | ✓ |
 | Download Offline | ✗ | ✗ | ✗ | ✓ |
 | Remove Ads | ✗ | ✗ | ✗ | ✓ |
 | View Reports | ✓ | ✗ | ✗ | ✗ |
