@@ -1,5 +1,5 @@
 # Phân Tích Hệ Thống Authentication Và Phân Quyền Người Dùng
-
+doan_nhom6/doan_nhom6/Views/Auth 
 # 1. Tổng Quan Hệ Thống
 
 Hệ thống được xây dựng cho ứng dụng nghe nhạc trực tuyến với mục tiêu:
