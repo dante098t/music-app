@@ -369,9 +369,3 @@ Activity Diagram Specification mô tả toàn bộ luồng hoạt động chính
 - Side Menu Navigation
 - Role Management
 - Premium Features
-
-Tài liệu hỗ trợ:
-- Thiết kế UML
-- Phân tích hệ thống
-- Bảo trì ứng dụng
-- Mở rộng hệ thống trong tương lai
