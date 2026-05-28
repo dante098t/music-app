@@ -103,3 +103,16 @@ The application is engineered using a scalable **MVVM-Service (Model-View-ViewMo
 ```bash
    git clone [https://github.com/dante098t/music-app.git](https://github.com/dante098t/music-app.git)
    cd music-app/doan_nhom6
+```
+2. **Backend Authentication Setup:**
+Initialize your client configuration parameters securely matching your running cloud instance keys:
+
+SUPABASE_URL
+
+SUPABASE_ANON_KEY
+
+Compilation Process:
+Open the root workspace in Xcode, select your target execution model (e.g., iPhone simulator target), and deploy the application by executing the command Cmd + R.
+
+### 6. CONCLUSION & FUTURE WORK
+The engineered iOS application successfully demonstrates the feasibility of combining SwiftUI and serverless backends like Supabase to deploy high-fidelity multimedia platforms. Future iterations will focus on implementing offline raw audio downloads encrypted directly via local Core Data graphs and improving context-aware music recommendation engines.
