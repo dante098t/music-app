@@ -8,6 +8,10 @@ struct RootView: View {
     @State private var role: UserRole = .user
     @State private var isLoading = true
 
+    // RESET PASSWORD FLOW
+
+    @State private var showResetPassword = false
+
     var body: some View {
 
         NavigationStack {
@@ -26,7 +30,13 @@ struct RootView: View {
                         ProgressView()
                             .tint(.white)
                     }
+                }
 
+                // MARK: RESET PASSWORD
+
+                else if showResetPassword {
+
+                    ResetPasswordView()
                 }
 
                 // MARK: AUTHENTICATED
@@ -44,16 +54,13 @@ struct RootView: View {
                         ArtistDashboardView()
 
                     case .premium:
-                       
-                        ArtistDashboardView()
-                     
-                       // PremiumHomeView()
+
+                        PremiumHomeView()
 
                     case .user:
 
                         HomeView()
                     }
-
                 }
 
                 // MARK: LOGIN
@@ -71,12 +78,32 @@ struct RootView: View {
             }
         }
 
-        // 👇 chỉ gọi 1 lần
+        // MARK: APP OPEN
+
         .onAppear {
+
+            print("🚀 RootView appeared")
 
             Task {
 
                 await checkSession()
+            }
+        }
+
+        // MARK: DEEP LINK
+
+        .onOpenURL { url in
+
+            print("🔥 OPEN URL:")
+            print(url.absoluteString)
+
+            // RESET PASSWORD LINK
+
+            if url.absoluteString.contains("reset-password") {
+
+                print("✅ Reset password link detected")
+
+                showResetPassword = true
             }
         }
     }
@@ -85,53 +112,56 @@ struct RootView: View {
 // MARK: - SESSION
 
 extension RootView {
-    
+
     @MainActor
     func checkSession() async {
-        
+
         isLoading = true
-        
+
         defer {
-            
+
             isLoading = false
         }
-        
+
         do {
-            
-            // CHECK SESSION
-            
+
+            print("🔍 Checking session...")
+
+            // GET SESSION
+
             let session = try await SupabaseService
                 .shared
                 .client
                 .auth
                 .session
-            
-            print("✅ Logged in:", session.user.email ?? "")
-            
+
+            print("✅ Session found")
+            print("📧 EMAIL:", session.user.email ?? "NO EMAIL")
+            print("🆔 USER ID:", session.user.id)
+
             // FETCH ROLE
-            
+
             let fetchedRole = await AuthService
-
                 .shared
-
                 .fetchRole()
 
-            role = fetchedRole
-            
             print("🎭 ROLE:", fetchedRole.rawValue)
-            
-            // SET ROLE
-            
+
+            // SAVE ROLE
+
             role = fetchedRole
-            
-            // SUCCESS
-            
+
+            // LOGIN SUCCESS
+
             isLoggedIn = true
-            
+
+            print("✅ User logged in")
+
         } catch {
-            
-            print("❌ Session error:", error)
-            
+
+            print("❌ Session error:")
+            print(error.localizedDescription)
+
             isLoggedIn = false
         }
     }

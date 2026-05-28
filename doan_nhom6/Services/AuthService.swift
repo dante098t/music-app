@@ -85,7 +85,31 @@ final class AuthService {
 
         print("✅ LOGOUT SUCCESS")
     }
+    func updatePassword(password: String) async throws {
 
+        try await SupabaseService
+            .shared
+            .client
+            .auth
+            .update(
+                user: UserAttributes(
+                    password: password
+                )
+            )
+
+        print("✅ Password updated")
+    }
+    // MARK: - FORGOT PASSWORD
+   func resetPassword(email: String) async throws {
+
+       try await client.auth.resetPasswordForEmail(
+        email,
+
+               redirectTo: URL(string: "musicapp://reset-password")
+       )
+
+       print("✅ RESET PASSWORD EMAIL SENT")
+   }
     // MARK: - FETCH ROLE
     func fetchRole() async -> UserRole {
 

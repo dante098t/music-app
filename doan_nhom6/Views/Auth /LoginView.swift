@@ -16,33 +16,104 @@ struct LoginView: View {
 
             ZStack {
 
+                // MARK: Background
+
                 LinearGradient(
-                    colors: [.black, .purple],
+                    colors: [
+                        Color.black,
+                        Color.purple.opacity(0.8),
+                        Color.blue.opacity(0.7)
+                    ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
                 .ignoresSafeArea()
 
-                VStack(spacing: 22) {
+                VStack {
 
                     Spacer()
+
+                    // MARK: Logo
+
+                    Image(systemName: "music.note.house.fill")
+                        .font(.system(size: 70))
+                        .foregroundColor(.white)
+                        .padding(.bottom, 10)
 
                     Text("Welcome Back")
                         .font(.largeTitle.bold())
                         .foregroundColor(.white)
 
-                    VStack(spacing: 16) {
+                    Text("Login to continue")
+                        .foregroundColor(.white.opacity(0.7))
+                        .padding(.bottom, 30)
 
-                        TextField("Email", text: $email)
-                            .keyboardType(.emailAddress)
-                            .textInputAutocapitalization(.never)
+                    // MARK: Form
 
-                        SecureField("Password", text: $password)
+                    VStack(spacing: 18) {
+
+                        // Email
+
+                        HStack {
+
+                            Image(systemName: "envelope.fill")
+                                .foregroundColor(.white.opacity(0.7))
+
+                            TextField("Email", text: $email)
+                                .keyboardType(.emailAddress)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                                .foregroundColor(.white)
+                        }
+                        .padding()
+                        .background(Color.white.opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                        // Password
+
+                        HStack {
+
+                            Image(systemName: "lock.fill")
+                                .foregroundColor(.white.opacity(0.7))
+
+                            SecureField("Password", text: $password)
+                                .foregroundColor(.white)
+                        }
+                        .padding()
+                        .background(Color.white.opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                        // Forgot Password
+
+                        HStack {
+
+                            Spacer()
+
+                            NavigationLink {
+
+                                ForgotPasswordView()
+
+                            } label: {
+
+                                Text("Forgot Password?")
+                                    .font(.footnote)
+                                    .foregroundColor(.white.opacity(0.8))
+                            }
+                        }
                     }
-                    .padding()
-                    .background(Color.white.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
-                    .foregroundColor(.white)
+
+                    .padding(.horizontal)
+
+                    // MARK: Error Message
+
+                    if !errorMessage.isEmpty {
+
+                        Text(errorMessage)
+                            .foregroundColor(.red)
+                            .padding(.top, 10)
+                    }
+
+                    // MARK: Login Button
 
                     Button {
 
@@ -54,9 +125,9 @@ struct LoginView: View {
 
                         ZStack {
 
-                            RoundedRectangle(cornerRadius: 20)
+                            RoundedRectangle(cornerRadius: 18)
                                 .fill(Color.white)
-                                .frame(height: 56)
+                                .frame(height: 58)
 
                             if isLoading {
 
@@ -65,27 +136,33 @@ struct LoginView: View {
                             } else {
 
                                 Text("Login")
-                                    .fontWeight(.bold)
+                                    .font(.headline.bold())
                                     .foregroundColor(.black)
                             }
                         }
                     }
+                    .padding(.top, 25)
+                    .disabled(isLoading)
 
-                    NavigationLink {
+                    // MARK: Register
 
-                        RegisterView()
+                    HStack {
 
-                    } label: {
+                        Text("Don't have an account?")
+                            .foregroundColor(.white.opacity(0.7))
 
-                        Text("Create Account")
-                            .foregroundColor(.gray)
+                        NavigationLink {
+
+                            RegisterView()
+
+                        } label: {
+
+                            Text("Register")
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                        }
                     }
-
-                    if !errorMessage.isEmpty {
-
-                        Text(errorMessage)
-                            .foregroundColor(.red)
-                    }
+                    .padding(.top, 22)
 
                     Spacer()
                 }
@@ -116,5 +193,12 @@ struct LoginView: View {
         }
 
         isLoading = false
+    }
+}
+
+#Preview {
+
+    LoginView {
+
     }
 }
