@@ -2,7 +2,7 @@
 **Course/Project:** Final Graduation Project - Group 6 (doan_nhom6)  
 **Academic Field:** Computer Science & Artificial Intelligence  
 **Platform:** iOS (Swift, SwiftUI, AVFoundation)  
-**Backend Infrastructure:** Supabase & PostgreSQL  
+**Backend Infrastructure:** Supabase 
 
 ---
 
